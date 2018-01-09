@@ -13,10 +13,22 @@ class VizWindow(QWidget):
 
     def _initUI(self, img_name):
         self.setGeometry(750, 200, 200, 200)
+        self.setStyleSheet("background-color: white")
 
-        label = QLabel(self)
-        pixmap = QPixmap(img_name)
-        label.setPixmap(pixmap)
- 
-        if pixmap.width() > self.width() or pixmap.height() > self.height():
-            self.resize(pixmap.width(),pixmap.height())
+        self.label = QLabel(self)
+        self.pixmap = QPixmap(img_name)
+        self.label.setPixmap(self.pixmap)
+
+        self.resize(self.pixmap.width(), self.pixmap.height())
+
+
+    def playGif(self, gif_name):
+        self.movie = QMovie(gif_name, QByteArray(), self)
+        self.movie.setCacheMode(QMovie.CacheAll)
+        self.movie.setSpeed(15)
+        self.label.setMovie(self.movie)
+        self.movie.start()
+
+    def stopGif(self):
+        self.label.clear()
+        self.label.setPixmap(self.pixmap)

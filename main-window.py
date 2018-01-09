@@ -8,6 +8,7 @@ import sys
 import matplotlib.pyplot as plt 
 from machine import Machine
 from viz import VizWindow
+import imageio
 
 
 class MainWindow(QWidget):
@@ -23,6 +24,7 @@ class MainWindow(QWidget):
         self.prevSymbs = []
         self.endStates = []
         self.startState = []
+        self.machine = Machine()
 
 
     def _initUI(self):
@@ -46,10 +48,11 @@ class MainWindow(QWidget):
         self.stateTable = QTableWidget()
         self.stateTable.resizeColumnsToContents()
         self.stateTable.itemChanged.connect(self._createMachine)
+        self.stateTable.itemChanged.connect(self._refreshWord)
 
         self.enteredWord = QLineEdit()
         self.enteredWord.setPlaceholderText("Enter a word")
-        self.enteredWord.setStyleSheet("background-color: #B22222")
+        self.enteredWord.textChanged.connect(self._refreshWord)
 
         grid.addWidget(self.alphabetLine, 0, 0, 1, 5)
 
@@ -112,6 +115,7 @@ class MainWindow(QWidget):
         self.prevStates = states
 
         self._createMachine()
+        self._refreshWord()
         
     
     def _refreshEnds(self):
@@ -124,6 +128,7 @@ class MainWindow(QWidget):
                 self.endStates.append(end)
 
         self._createMachine()
+        self._refreshWord()
 
 
     def _createMachine(self):
@@ -143,10 +148,42 @@ class MainWindow(QWidget):
 
         self.machine = Machine(dict, self.startState, self.endStates)
         self.machine.draw('graph.png')
+        self._show()
 
+
+    def _refreshWord(self):
+        if not self.machine:
+            return
+
+        if self.enteredWord.text():
+            if self.machine.checkWord(self.enteredWord.text()):
+                self.enteredWord.setStyleSheet("background-color: #4E9C72")
+            else:
+                self.enteredWord.setStyleSheet("background-color: #FF0038")
+            self._animate(len(self.enteredWord.text()))
+        else:
+            self.enteredWord.setStyleSheet("background-color: #FF0038")
+            self.viz.stopGif()
+
+    
+    def _show(self):
         self.viz = VizWindow('graph.png')
         self.viz.show()
         self.activateWindow()
+
+
+    def _animate(self, count):
+        filenames = []
+        for i in range(count):
+            filenames.append("{}.png".format(i))
+
+        images = []
+        for filename in filenames:
+            images.append(imageio.imread(filename))
+            imageio.mimsave("movie.gif", images)
+
+        self.viz.playGif("movie.gif")
+
 
 
     def _addedIndex(self, prevList, currentList):
@@ -163,6 +200,10 @@ class MainWindow(QWidget):
         for i in range(len(removed)):
             res.append(prevList.index(removed[i]))
         return res
+
+    
+    def _closing(self):
+        print("LUL")
 
 
 if __name__ == '__main__':

@@ -2,19 +2,19 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import networkx as nx
 import sys
 import matplotlib.pyplot as plt 
 from machine import Machine
+from viz import VizWindow
 
 
-class MachineWindow(QWidget):
+class MainWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.initUI()
+        self._initUI()
         self.errorMsg = QErrorMessage()
         self.errorMsg.setFixedSize(500,220)
         self.messageBox = QMessageBox()
@@ -22,9 +22,10 @@ class MachineWindow(QWidget):
         self.prevStates = []
         self.prevSymbs = []
         self.endStates = []
+        self.startState = []
 
 
-    def initUI(self):
+    def _initUI(self):
         self.setGeometry(50, 400, 600, 400)
 
         grid = QGridLayout()
@@ -44,8 +45,7 @@ class MachineWindow(QWidget):
 
         self.stateTable = QTableWidget()
         self.stateTable.resizeColumnsToContents()
-        tableConfirm = QPushButton("Confirm", self)
-        tableConfirm.clicked.connect(self._createMachine)
+        self.stateTable.itemChanged.connect(self._createMachine)
 
         self.enteredWord = QLineEdit()
         self.enteredWord.setPlaceholderText("Enter a word")
@@ -60,8 +60,6 @@ class MachineWindow(QWidget):
         grid.addWidget(self.enteredWord, 3, 0, 1, 5)
 
         grid.addWidget(self.stateTable, 4, 0, 1, 5)
-
-        grid.addWidget(tableConfirm, 5, 0)
 
         self.setLayout(grid)
         self.show()
@@ -86,12 +84,17 @@ class MachineWindow(QWidget):
 
         self.prevSymbs = symbs
 
+        self._createMachine()
+
 
     def _refreshStates(self):
         states = self.statesLine.text().split(" ")
         states = list(filter(None, states))
 
-        self.startState = states[0]
+        if states:
+            self.startState = states[0]
+        else:
+            self.startState = None
 
         if len(states) > len(self.prevStates):                  #Стало больше - добавили
             indexes = self._addedIndex(self.prevStates, states) #Получаем индексы вставленных элементов
@@ -107,6 +110,8 @@ class MachineWindow(QWidget):
             self.stateTable.setHorizontalHeaderLabels(states)
 
         self.prevStates = states
+
+        self._createMachine()
         
     
     def _refreshEnds(self):
@@ -117,6 +122,8 @@ class MachineWindow(QWidget):
         for end in ends:
             if end in self.prevStates:
                 self.endStates.append(end)
+
+        self._createMachine()
 
 
     def _createMachine(self):
@@ -137,6 +144,10 @@ class MachineWindow(QWidget):
         self.machine = Machine(dict, self.startState, self.endStates)
         self.machine.draw('graph.png')
 
+        self.viz = VizWindow('graph.png')
+        self.viz.show()
+        self.activateWindow()
+
 
     def _addedIndex(self, prevList, currentList):
         added = list(set(currentList) - set(prevList))
@@ -156,5 +167,5 @@ class MachineWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MachineWindow()
+    window = MainWindow()
     sys.exit(app.exec_())

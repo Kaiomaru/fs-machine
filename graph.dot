@@ -1,4 +1,27 @@
 digraph "" {
-	q1 -> q1	 [label=a];
-	q1 -> q2	 [label=b];
+	q1	 [style=dashed];
+	q1 -> q1	 [label=a,
+		weight=a];
+	q2	 [style=filled];
+	q1 -> q2	 [label=c,
+		weight=c];
+	q4	 [style=filled];
+	q1 -> q4	 [label=b,
+		weight=b];
+	q2 -> q1	 [label=b,
+		weight=b];
+	q2 -> q4	 [label=a,
+		weight=a];
+	q2 -> q3	 [label=c,
+		weight=c];
+	q4 -> q2	 [label=c,
+		weight=c];
+	q4 -> q4	 [label=a,
+		weight=a];
+	q3 -> q2	 [label=a,
+		weight=a];
+	q3 -> q4	 [label=b,
+		weight=b];
+	q3 -> q3	 [label=c,
+		weight=c];
 }

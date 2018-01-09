@@ -131,10 +131,11 @@ class MachineWindow(QWidget):
 
                 if item and item.text() in self.prevStates:                 #Если в ячейке что-то есть, и это одно из состояний
                     transitions[vheader] = self.stateTable.item(j, i).text()
-                    
+
             dict[hheader] = transitions
 
         self.machine = Machine(dict, self.startState, self.endStates)
+        self.machine.draw('graph.png')
 
 
     def _addedIndex(self, prevList, currentList):

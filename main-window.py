@@ -176,16 +176,17 @@ class MainWindow(QWidget):
 
 
     def _animate(self, count):
-        filenames = []
-        for i in range(count):
-            filenames.append("{}.png".format(i))
+        if count > 0:
+            filenames = []
+            for i in range(count):
+                filenames.append("{}.png".format(i))
 
-        images = []
-        for filename in filenames:
-            images.append(imageio.imread(filename))
-            imageio.mimsave("movie.gif", images)
+            images = []
+            for filename in filenames:
+                images.append(imageio.imread(filename))
+                imageio.mimsave("movie.gif", images)
 
-        self.viz.playGif("movie.gif")
+            self.viz.playGif("movie.gif")
 
 
 

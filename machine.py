@@ -36,7 +36,13 @@ class Machine:
         os.system("dot -Tpng graph.dot > {}".format(filename))
 
         img = Image.open(filename)
-        img = img.resize((int(img.size[0] * 1.3), int(img.size[1] * 1.3)), Image.ANTIALIAS) #Увеличиваем изображение
+        if img.size[0] < 500 and img.size[1] < 500:
+            k = 1.6
+        elif img.size[0] < 700 and img.size[1] < 700:
+            k = 1.4
+        else:
+            k = 1.2
+        img = img.resize((int(img.size[0] * k), int(img.size[1] * k)), Image.ANTIALIAS) #Увеличиваем изображение
         img.save(filename)
 
     def checkWord(self, word):

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import *
@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 import networkx as nx
 import sys
 import matplotlib.pyplot as plt 
+from machine import Machine
 
 
 class MachineWindow(QWidget):
@@ -20,6 +21,7 @@ class MachineWindow(QWidget):
         self.messageBox.setFixedSize(500,220)
         self.prevStates = []
         self.prevSymbs = []
+        self.endStates = []
 
 
     def initUI(self):
@@ -30,18 +32,20 @@ class MachineWindow(QWidget):
 
         self.alphabetLine = QLineEdit()
         self.alphabetLine.setPlaceholderText("Alphabet")
-        self.alphabetLine.textChanged.connect(self.refreshAlphabet)
+        self.alphabetLine.textChanged.connect(self._refreshAlphabet)
 
         self.statesLine = QLineEdit()
         self.statesLine.setPlaceholderText("States")
-        self.statesLine.textChanged.connect(self.refreshStates)
+        self.statesLine.textChanged.connect(self._refreshStates)
 
         self.endsLine = QLineEdit()
         self.endsLine.setPlaceholderText("Ends")
+        self.endsLine.textChanged.connect(self._refreshEnds)
 
         self.stateTable = QTableWidget()
         self.stateTable.resizeColumnsToContents()
         tableConfirm = QPushButton("Confirm", self)
+        tableConfirm.clicked.connect(self._createMachine)
 
         self.enteredWord = QLineEdit()
         self.enteredWord.setPlaceholderText("Enter a word")
@@ -63,7 +67,7 @@ class MachineWindow(QWidget):
         self.show()
 
 
-    def refreshAlphabet(self):
+    def _refreshAlphabet(self):
         symbs = self.alphabetLine.text().split(" ")
         symbs = list(filter(None, symbs))
         
@@ -83,9 +87,11 @@ class MachineWindow(QWidget):
         self.prevSymbs = symbs
 
 
-    def refreshStates(self):
+    def _refreshStates(self):
         states = self.statesLine.text().split(" ")
         states = list(filter(None, states))
+
+        self.startState = states[0]
 
         if len(states) > len(self.prevStates):                  #Стало больше - добавили
             indexes = self._addedIndex(self.prevStates, states) #Получаем индексы вставленных элементов
@@ -101,6 +107,34 @@ class MachineWindow(QWidget):
             self.stateTable.setHorizontalHeaderLabels(states)
 
         self.prevStates = states
+        
+    
+    def _refreshEnds(self):
+        self.endStates = []
+        ends = self.endsLine.text().split(" ")
+        ends = list(filter(None, ends))
+
+        for end in ends:
+            if end in self.prevStates:
+                self.endStates.append(end)
+
+
+    def _createMachine(self):
+        dict = {}
+        for i in range(self.stateTable.columnCount()):
+            hheader = self.stateTable.horizontalHeaderItem(i).text()
+            transitions = {}
+
+            for j in range(self.stateTable.rowCount()):
+                vheader = self.stateTable.verticalHeaderItem(j).text()
+                item = self.stateTable.item(j, i)
+
+                if item and item.text() in self.prevStates:                 #Если в ячейке что-то есть, и это одно из состояний
+                    transitions[vheader] = self.stateTable.item(j, i).text()
+                    
+            dict[hheader] = transitions
+
+        self.machine = Machine(dict, self.startState, self.endStates)
 
 
     def _addedIndex(self, prevList, currentList):

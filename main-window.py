@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from machine import Machine
 from viz import VizWindow
 import imageio
+import sys
+import os
 
 
 class MainWindow(QWidget):
@@ -156,11 +158,12 @@ class MainWindow(QWidget):
             return
 
         if self.enteredWord.text():
-            if self.machine.checkWord(self.enteredWord.text()):
+            correct, count = self.machine.checkWord(self.enteredWord.text())
+            if correct:
                 self.enteredWord.setStyleSheet("background-color: #4E9C72")
             else:
                 self.enteredWord.setStyleSheet("background-color: #FF0038")
-            self._animate(len(self.enteredWord.text()))
+            self._animate(count)
         else:
             self.enteredWord.setStyleSheet("background-color: #FF0038")
             self.viz.stopGif()
@@ -201,9 +204,12 @@ class MainWindow(QWidget):
             res.append(prevList.index(removed[i]))
         return res
 
-    
-    def _closing(self):
-        print("LUL")
+    def closeEvent(self, event):
+        listdir = os.listdir(os.getcwd())
+        for item in listdir:
+            if item.endswith(".gif") or item.endswith(".png"):
+                os.remove(os.path.join(os.getcwd(), item))
+        event.accept()
 
 
 if __name__ == '__main__':

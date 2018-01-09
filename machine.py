@@ -56,13 +56,13 @@ class Machine:
                             edge['color'] = 'black'
                     currentState = dict_[symb]
                 else:
-                    return False
+                    return False, count
                 count += 1
 
             if currentState not in self.endStates:
-                return False
+                return False, count
 
-            return True
+            return True, count
 
         except AttributeError as e:
             print(e)
